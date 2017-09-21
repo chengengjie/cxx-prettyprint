@@ -20,15 +20,19 @@
 #include "prettyprint.hpp"
 
 
-/* Customization option 1: Direct partial/full specialization.
-   Here we specialize for std::vector<double>.
-*/
-template<> const pretty_print::delimiters_values<char> pretty_print::delimiters<std::vector<double>, char>::values = { "|| ", " : ", " ||" };
+namespace pretty_print
+{
+  /* Customization option 1: Direct partial/full specialization.
+     Here we specialize for std::vector<double>.
+  */
+  template <>
+  struct delimiters<std::vector<double>> { static constexpr delimiters_values<char> values = { "{", ", ", "}" }; };
 
-/* Customization option 2: Create a delimiters class for later use and reuse. */
-struct MyDelims { static const pretty_print::delimiters_values<char> values; };
-const pretty_print::delimiters_values<char> MyDelims::values = { "<", "; ", ">" };
+  /* Customization option 2: Create a delimiters class for later use and reuse. */
+  struct MyDelims { static constexpr delimiters_values<char> values = { "<", "; ", ">" }; };
+}
 
+using pretty_print::MyDelims;
 
 /* Demo: run with a couple of command-line arguments. */
 

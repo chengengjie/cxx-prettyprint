@@ -85,7 +85,7 @@ namespace pretty_print
 
     // Defines the delimiter values for a specific container and character type
 
-    template <typename T, typename TChar>
+    template <typename T, typename TChar = char>
     struct delimiters
     {
         using type = delimiters_values<TChar>;
@@ -236,11 +236,11 @@ namespace pretty_print
     template <typename T>
     struct is_container<std::valarray<T>> : std::true_type { };
 
-    template <typename T1, typename T2>
-    struct is_container<std::pair<T1, T2>> : std::true_type { };
+    template <typename ...T>
+    struct is_container<std::pair<T...>> : std::true_type { };
 
-    template <typename ...Args>
-    struct is_container<std::tuple<Args...>> : std::true_type { };
+    template <typename ...T>
+    struct is_container<std::tuple<T...>> : std::true_type { };
 
 
     // Default delimiters
@@ -254,37 +254,23 @@ namespace pretty_print
     // Delimiters for (unordered_)(multi)set
 
     template <typename ...T>
-    struct delimiters< std::set<T...>, char> { static const delimiters_values<char> values; };
+    struct delimiters<std::set<T...>> { static constexpr delimiters_values<char> values = { "{", ", ", "}" }; };
 
     template <typename ...T>
-    const delimiters_values<char> delimiters< std::set<T...>, char>::values = { "{", ", ", "}" };
+    struct delimiters<std::multiset<T...>> { static constexpr delimiters_values<char> values = { "{", ", ", "}" }; };
 
     template <typename ...T>
-    struct delimiters< std::multiset<T...>, char> { static const delimiters_values<char> values; };
+    struct delimiters<std::unordered_set<T...>> { static constexpr delimiters_values<char> values = { "{", ", ", "}" }; };
 
     template <typename ...T>
-    const delimiters_values<char> delimiters< std::multiset<T...>, char>::values = { "{", ", ", "}" };
-
-    template <typename ...T>
-    struct delimiters< std::unordered_set<T...>, char> { static const delimiters_values<char> values; };
-
-    template <typename ...T>
-    const delimiters_values<char> delimiters< std::unordered_set<T...>, char>::values = { "{", ", ", "}" };
-
-    template <typename ...T>
-    struct delimiters< std::unordered_multiset<T...>, char> { static const delimiters_values<char> values; };
-
-    template <typename ...T>
-    const delimiters_values<char> delimiters< std::unordered_multiset<T...>, char>::values = { "{", ", ", "}" };
+    struct delimiters<std::unordered_multiset<T...>> { static constexpr delimiters_values<char> values = { "{", ", ", "}" }; };
 
 
     // Delimiters for pair and tuple
 
-    template <typename T1, typename T2> struct delimiters<std::pair<T1, T2>, char> { static const delimiters_values<char> values; };
-    template <typename T1, typename T2> const delimiters_values<char> delimiters<std::pair<T1, T2>, char>::values = { "(", ", ", ")" };
+    template <typename ...T> struct delimiters<std::pair<T...>> { static constexpr delimiters_values<char> values = { "(", ", ", ")" }; };
 
-    template <typename ...Args> struct delimiters<std::tuple<Args...>, char> { static const delimiters_values<char> values; };
-    template <typename ...Args> const delimiters_values<char> delimiters<std::tuple<Args...>, char>::values = { "(", ", ", ")" };
+    template <typename ...T> struct delimiters<std::tuple<T...>> { static constexpr delimiters_values<char> values = { "(", ", ", ")" }; };
 
 
     // Type-erasing helper class for easy use of custom delimiters.
