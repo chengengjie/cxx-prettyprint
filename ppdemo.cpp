@@ -34,6 +34,18 @@ const pretty_print::delimiters_values<char> MyDelims::values = { "<", "; ", ">" 
 
 int main(int argc, char * argv[])
 {
+  std::vector<std::string> data;
+  if (argc == 1)
+  {
+    data = {"alpha", "beta", "gamma", "delta"};
+  }
+  else
+  {
+    for (int i = 1; i < argc; ++i)
+    {
+      data.emplace_back(argv[i]);
+    }
+  }
   std::string cs;
   std::unordered_map<int, std::string> um;
   std::map<int, std::string> om;
@@ -48,9 +60,9 @@ int main(int argc, char * argv[])
 
   std::cout << "Printing pairs." << std::endl;
 
-  for (int i = 1; i < argc; ++i)
+  for (unsigned i = 0; i < data.size(); ++i)
   {
-    std::string s(argv[i]);
+    const auto& s = data[i];
     std::pair<int, std::string> p(i, s);
 
     um[i] = s;
