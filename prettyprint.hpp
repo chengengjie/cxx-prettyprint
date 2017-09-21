@@ -99,7 +99,7 @@ namespace pretty_print
 
     template <typename T,
               typename TChar = char,
-              typename TCharTraits = ::std::char_traits<TChar>,
+              typename TCharTraits = std::char_traits<TChar>,
               typename TDelimiters = delimiters<T, TChar>>
     struct print_container_helper
     {
@@ -253,29 +253,29 @@ namespace pretty_print
 
     // Delimiters for (unordered_)(multi)set
 
-    template <typename T, typename TComp, typename TAllocator>
-    struct delimiters< ::std::set<T, TComp, TAllocator>, char> { static const delimiters_values<char> values; };
+    template <typename ...T>
+    struct delimiters< std::set<T...>, char> { static const delimiters_values<char> values; };
 
-    template <typename T, typename TComp, typename TAllocator>
-    const delimiters_values<char> delimiters< ::std::set<T, TComp, TAllocator>, char>::values = { "{", ", ", "}" };
+    template <typename ...T>
+    const delimiters_values<char> delimiters< std::set<T...>, char>::values = { "{", ", ", "}" };
 
-    template <typename T, typename TComp, typename TAllocator>
-    struct delimiters< ::std::multiset<T, TComp, TAllocator>, char> { static const delimiters_values<char> values; };
+    template <typename ...T>
+    struct delimiters< std::multiset<T...>, char> { static const delimiters_values<char> values; };
 
-    template <typename T, typename TComp, typename TAllocator>
-    const delimiters_values<char> delimiters< ::std::multiset<T, TComp, TAllocator>, char>::values = { "{", ", ", "}" };
+    template <typename ...T>
+    const delimiters_values<char> delimiters< std::multiset<T...>, char>::values = { "{", ", ", "}" };
 
-    template <typename T, typename THash, typename TEqual, typename TAllocator>
-    struct delimiters< ::std::unordered_set<T, THash, TEqual, TAllocator>, char> { static const delimiters_values<char> values; };
+    template <typename ...T>
+    struct delimiters< std::unordered_set<T...>, char> { static const delimiters_values<char> values; };
 
-    template <typename T, typename THash, typename TEqual, typename TAllocator>
-    const delimiters_values<char> delimiters< ::std::unordered_set<T, THash, TEqual, TAllocator>, char>::values = { "{", ", ", "}" };
+    template <typename ...T>
+    const delimiters_values<char> delimiters< std::unordered_set<T...>, char>::values = { "{", ", ", "}" };
 
-    template <typename T, typename THash, typename TEqual, typename TAllocator>
-    struct delimiters< ::std::unordered_multiset<T, THash, TEqual, TAllocator>, char> { static const delimiters_values<char> values; };
+    template <typename ...T>
+    struct delimiters< std::unordered_multiset<T...>, char> { static const delimiters_values<char> values; };
 
-    template <typename T, typename THash, typename TEqual, typename TAllocator>
-    const delimiters_values<char> delimiters< ::std::unordered_multiset<T, THash, TEqual, TAllocator>, char>::values = { "{", ", ", "}" };
+    template <typename ...T>
+    const delimiters_values<char> delimiters< std::unordered_multiset<T...>, char>::values = { "{", ", ", "}" };
 
 
     // Delimiters for pair and tuple
@@ -294,8 +294,8 @@ namespace pretty_print
     struct custom_delims_base
     {
         virtual ~custom_delims_base() { }
-        virtual std::ostream & stream(::std::ostream &) = 0;
-        virtual std::wostream & stream(::std::wostream &) = 0;
+        virtual std::ostream & stream(std::ostream &) = 0;
+        virtual std::wostream & stream(std::wostream &) = 0;
     };
 
     template <typename T, typename Delims>
