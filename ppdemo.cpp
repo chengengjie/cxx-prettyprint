@@ -127,12 +127,14 @@ int main(int argc, char * argv[])
 
   std::cout << "Static C array: " << arr << std::endl
             << "Static C array: " << err << std::endl
-            << "Static C array with length: " << pretty_print_array(arr + 1, 2) << std::endl
+            // << "Static C array with length: " << pretty_print_array(arr + 1, 2) << std::endl
+            << std::endl
             << "Pair:    " << a1 << std::endl
             << "0-tuple: " << a5 << std::endl
             << "1-tuple: " << a2 << std::endl
             << "n-tuple: " << a3 << std::endl
             << "n-tuple: " << a4 << std::endl
-            << "Hashmap bucket: " << bucket_print(um, 0) << std::endl
+            // << "Hashmap bucket: " << bucket_print(um, 0) << std::endl
+            << std::endl
   ;
 }

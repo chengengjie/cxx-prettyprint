@@ -24,51 +24,14 @@
 
 namespace pretty_print
 {
-    namespace detail
-    {
-        // SFINAE type trait to detect whether T::const_iterator exists.
+    // SFINAE has_begin_end
 
-        struct sfinae_base
-        {
-            using yes = char;
-            using no  = yes[2];
-        };
-
-        template <typename T>
-        struct has_const_iterator : private sfinae_base
-        {
-        private:
-            template <typename C> static yes & test(typename C::const_iterator*);
-            template <typename C> static no  & test(...);
-        public:
-            static const bool value = sizeof(test<T>(nullptr)) == sizeof(yes);
-            using type =  T;
-        };
-
-        template <typename T>
-        struct has_begin_end : private sfinae_base
-        {
-        private:
-            template <typename C>
-            static yes & f(typename std::enable_if<
-                std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::begin)),
-                             typename C::const_iterator(C::*)() const>::value>::type *);
-
-            template <typename C> static no & f(...);
-
-            template <typename C>
-            static yes & g(typename std::enable_if<
-                std::is_same<decltype(static_cast<typename C::const_iterator(C::*)() const>(&C::end)),
-                             typename C::const_iterator(C::*)() const>::value, void>::type*);
-
-            template <typename C> static no & g(...);
-
-        public:
-            static bool const beg_value = sizeof(f<T>(nullptr)) == sizeof(yes);
-            static bool const end_value = sizeof(g<T>(nullptr)) == sizeof(yes);
-        };
-
-    }  // namespace detail
+    template <typename T, typename = void>
+    struct has_begin_end
+    : std::false_type {};
+    template <typename T>
+    struct has_begin_end<T, decltype((void)std::begin(std::declval<T>()), (void)std::end(std::declval<T>()))>
+    : std::true_type {};
 
 
     // Holds the delimiter values for a specific character type
@@ -111,11 +74,8 @@ namespace pretty_print
         {
             static void print_body(const U & c, ostream_type & stream)
             {
-                using std::begin;
-                using std::end;
-
-                auto it = begin(c);
-                const auto the_end = end(c);
+                auto it = std::begin(c);
+                const auto the_end = std::end(c);
 
                 if (it != the_end)
                 {
@@ -222,19 +182,7 @@ namespace pretty_print
     // Basic is_container template; specialize to derive from std::true_type for all desired container types
 
     template <typename T>
-    struct is_container : public std::integral_constant<bool,
-                                                        detail::has_const_iterator<T>::value &&
-                                                        detail::has_begin_end<T>::beg_value  &&
-                                                        detail::has_begin_end<T>::end_value> { };
-
-    template <typename T, std::size_t N>
-    struct is_container<T[N]> : std::true_type { };
-
-    template <std::size_t N>
-    struct is_container<char[N]> : std::false_type { };
-
-    template <typename T>
-    struct is_container<std::valarray<T>> : std::true_type { };
+    struct is_container : std::integral_constant<bool, has_begin_end<T>::value> {};
 
     template <typename ...T>
     struct is_container<std::pair<T...>> : std::true_type { };
@@ -245,10 +193,7 @@ namespace pretty_print
 
     // Default delimiters
 
-    template <typename T> struct delimiters<T, char> { static const delimiters_values<char> values; };
-    template <typename T> const delimiters_values<char> delimiters<T, char>::values = { "[", ", ", "]" };
-    template <typename T> struct delimiters<T, wchar_t> { static const delimiters_values<wchar_t> values; };
-    template <typename T> const delimiters_values<wchar_t> delimiters<T, wchar_t>::values = { L"[", L", ", L"]" };
+    template <typename T> struct delimiters<T, char> { static constexpr delimiters_values<char> values = { "[", ", ", "]" }; };
 
 
     // Delimiters for (unordered_)(multi)set
@@ -281,7 +226,6 @@ namespace pretty_print
     {
         virtual ~custom_delims_base() { }
         virtual std::ostream & stream(std::ostream &) = 0;
-        virtual std::wostream & stream(std::wostream &) = 0;
     };
 
     template <typename T, typename Delims>
@@ -292,11 +236,6 @@ namespace pretty_print
         std::ostream & stream(std::ostream & s)
         {
             return s << print_container_helper<T, char, std::char_traits<char>, Delims>(t);
-        }
-
-        std::wostream & stream(std::wostream & s)
-        {
-            return s << print_container_helper<T, wchar_t, std::char_traits<wchar_t>, Delims>(t);
         }
 
     private:
@@ -317,69 +256,8 @@ namespace pretty_print
     {
         return p.base->stream(s);
     }
-
-
-    // A wrapper for a C-style array given as pointer-plus-size.
-    // Usage: std::cout << pretty_print_array(arr, n) << std::endl;
-
-    template<typename T>
-    struct array_wrapper_n
-    {
-        typedef const T * const_iterator;
-        typedef T value_type;
-
-        array_wrapper_n(const T * const a, size_t n) : _array(a), _n(n) { }
-        inline const_iterator begin() const { return _array; }
-        inline const_iterator end() const { return _array + _n; }
-
-    private:
-        const T * const _array;
-        size_t _n;
-    };
-
-
-    // A wrapper for hash-table based containers that offer local iterators to each bucket.
-    // Usage: std::cout << bucket_print(m, 4) << std::endl;  (Prints bucket 5 of container m.)
-
-    template <typename T>
-    struct bucket_print_wrapper
-    {
-        typedef typename T::const_local_iterator const_iterator;
-        typedef typename T::size_type size_type;
-
-        const_iterator begin() const
-        {
-            return m_map.cbegin(n);
-        }
-
-        const_iterator end() const
-        {
-            return m_map.cend(n);
-        }
-
-        bucket_print_wrapper(const T & m, size_type bucket) : m_map(m), n(bucket) { }
-
-    private:
-        const T & m_map;
-        const size_type n;
-    };
-
+    
 }   // namespace pretty_print
-
-
-// Global accessor functions for the convenience wrappers
-
-template<typename T>
-inline pretty_print::array_wrapper_n<T> pretty_print_array(const T * const a, size_t n)
-{
-    return pretty_print::array_wrapper_n<T>(a, n);
-}
-
-template <typename T> pretty_print::bucket_print_wrapper<T>
-bucket_print(const T & m, typename T::size_type n)
-{
-    return pretty_print::bucket_print_wrapper<T>(m, n);
-}
 
 
 // Main magic entry point: An overload snuck into namespace std.
